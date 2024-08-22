@@ -1,0 +1,26 @@
+{
+  "name": "rapidfy",
+  "version": "1.0.0",
+  "description": "Rapidfy is a simple and fast way to create a new project",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "node tests/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KimmyLps/rapidfy.git"
+  },
+  "keywords": [
+    "rapidfy",
+    "cli",
+    "node",
+    "backend",
+    "framework"
+  ],
+  "author": "KimmyLps",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/KimmyLps/rapidfy/issues"
+  },
+  "homepage": "https://github.com/KimmyLps/rapidfy#readme"
+}
