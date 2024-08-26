@@ -79,7 +79,7 @@ class Rapidfy {
 
         this.middleware.apply(request, response, (err) => {
             if (err) {
-                this.errorHandler(err, request, response);
+                this.router.errorHandler(err, request, response);
             } else {
                 this.router.handle(request, response);
             }
@@ -89,10 +89,6 @@ class Rapidfy {
     listen(port, cb) {
         const server = http.createServer(this.handle.bind(this));
         server.listen(port, cb);
-    }
-
-    errorHandler(err, req, res) {
-        console.error('Unhandled error:', err);
     }
 }
 
