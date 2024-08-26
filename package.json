@@ -7,9 +7,9 @@
     "dev": "node examples/v1/index.js",
     "test": "node tests/app.test.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/KimmyLps/rapidfy.git"
+  "repository": "https://github.com/KimmyLps/rapidfy.git",
+  "publishConfig": {
+    "@KimmyLps:registry": "https://npm.pkg.github.com"
   },
   "keywords": [
     "rapidfy",
