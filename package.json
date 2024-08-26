@@ -2,9 +2,10 @@
   "name": "rapidfy",
   "version": "1.0.0",
   "description": "Rapidfy is a simple and fast way to create a new project",
-  "main": "src/index.js",
+  "main": "index.js",
   "scripts": {
-    "test": "node tests/index.js"
+    "dev": "node examples/v1/index.js",
+    "test": "node tests/app.test.js"
   },
   "repository": {
     "type": "git",

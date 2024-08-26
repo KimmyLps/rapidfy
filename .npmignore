@@ -1,5 +1,10 @@
+.github/
+.vscode/
+dist/
+node_modules/
 examples/
 tests/
 .gitignore
 .eslintrc.json
 nodemon.json
+package-lock.json

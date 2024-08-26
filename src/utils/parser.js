@@ -1,4 +1,6 @@
-const parseJson = (req) => {
+var parser = module.exports = {};
+
+parser.parseJSON = function (req) {
     return new Promise((resolve, reject) => {
         if (typeof req.on !== 'function') {
             return reject(new Error('Invalid request object'));
@@ -8,30 +10,32 @@ const parseJson = (req) => {
         req.on('data', chunk => body += chunk.toString());
         req.on('end', () => {
             try {
-                resolve(JSON.parse(body));
-            } catch (err) {
+                req.body = JSON.parse(body);
+                resolve(req);
+            } catch (error) {
                 reject(new Error('Invalid JSON'));
             }
         });
     });
-};
+}
 
-const parseUrlEncoded = (req) => {
+parser.parseUrlEncoded = function (req) {
     const queryString = require('querystring');
     return new Promise((resolve, reject) => {
         let body = '';
         req.on('data', chunk => body += chunk.toString());
         req.on('end', () => {
             try {
-                resolve(queryString.parse(body));
-            } catch (err) {
+                req.body = queryString.parse(body);
+                resolve(req);
+            } catch (error) {
                 reject(new Error('Invalid URL-encoded'));
             }
         });
     });
-};
+}
 
-const parseCookies = (cookieHeader) => {
+parser.parseCookies = function (cookieHeader) {
     const cookies = {};
     if (!cookieHeader) return cookies;
     const cookiePairs = cookieHeader.split(';');
@@ -42,50 +46,28 @@ const parseCookies = (cookieHeader) => {
     return cookies;
 }
 
-const parseBody = (options = {}) => {
+parser.parseBody = function (options = {}) {
     return async (req, res, next) => {
         try {
             if (req.headers['content-type'] === 'application/json') {
-                req.body = await parseJson(req);
+                req = await module.exports.parseJSON(req);
             } else if (req.headers['content-type'] === 'application/x-www-form-urlencoded') {
-                req.body = await parseUrlEncoded(req);
+                req = await module.exports.parseUrlEncoded(req);
             } else {
                 req.body = {};
             }
             next();
-        } catch (err) {
-            res.statusCode = 400;
-            res.end(`Error parsing body: ${err.message}`);
+        } catch (error) {
+            res.status(400).end(`Error parsing body: ${error.message}`);
         }
     }
-};
-
-const parseParams = (req) => {
-    const url = req.url;
-    const urlParts = url.split('/');
-    const id = urlParts[urlParts.length - 1];
-    if (!isNaN(id)) return { id: parseInt(id) };
-    return {};
 }
 
-const parseQuery = (req) => {
-    const query = new URLSearchParams(req.url.split('?')[1]);
-    const queryParams = {};
-    query.forEach((value, key) => queryParams[key] = value);
-    return queryParams;
+parser.parseParams = function () {
+    return (req, res, next) => {
+        const url = new URL(req.url, `http://${req.headers.host}`);
+        req.params = Object.fromEntries(url.searchParams);
+        req.url = url.pathname;
+        next();
+    };
 }
-
-const parseHeaders = (headers) => {
-    return Object.fromEntries(headers);
-}
-
-module.exports = {
-    parseJson,
-    parseUrlEncoded,
-    parseBody,
-    parseCookies,
-    parseBody,
-    parseParams,
-    parseQuery,
-    parseHeaders
-};
