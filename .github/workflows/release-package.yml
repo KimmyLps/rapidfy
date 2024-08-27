@@ -25,7 +25,7 @@ jobs:
   publish-npm:
     needs: build
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code 🛎️
         uses: actions/checkout@v4
@@ -35,6 +35,11 @@ jobs:
         with:
           node-version: 16
           registry-url: https://registry.npmjs.org/
+
+      - name: Bump version automatically
+        run: npm version patch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Authenticate to npm registry
         run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
