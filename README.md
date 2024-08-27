@@ -1,5 +1,7 @@
 # Rapidfy Framework
 
+[![npm version](https://badge.fury.io/js/rapidfy.svg)](https://badge.fury.io/js/rapidfy)
+
 **Fast, unopinionated, minimalist web framework for [Node.js](http://nodejs.org).**
 
 ## Table of contents
