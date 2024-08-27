@@ -1,7 +1,7 @@
 # Rapidfy Framework
 
 [![npm version](https://badge.fury.io/js/rapidfy.svg)](https://badge.fury.io/js/rapidfy)
-[![CI Node.js Package](https://github.com/KimmyLps/rapidfy/actions/workflows/ci-package.yml/badge.svg?branch=main)](https://github.com/KimmyLps/rapidfy/actions/workflows/ci-package.yml)
+[![CI Node.js Package](https://github.com/KimmyLps/rapidfy/actions/workflows/ci-package.yml/badge.svg?branch=main&event=push)](https://github.com/KimmyLps/rapidfy/actions/workflows/ci-package.yml)
 
 **Fast, unopinionated, minimalist web framework for [Node.js](http://nodejs.org).**
 
