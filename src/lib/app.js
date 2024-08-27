@@ -5,6 +5,7 @@ var Request = require('./request');
 var Response = require('./response');
 var MiddlewareManager = require('./middleware');
 var { parseBody } = require('../utils/parser');
+var SwaggerUI = require('./swagger');
 
 exports = module.exports = createApplication;
 
@@ -23,66 +24,63 @@ class Rapidfy {
         // this.use(parseBody());
     }
 
-    use(path, middleware) {
-        if (typeof path === 'object') {
-            if (path instanceof Router) {
-                this.router.use('/', path);
-            } else {
-                this.middleware.use(path);
-            }
-        }
-
-        if (typeof path === 'string' && typeof middleware === 'function') {
-            this.router.use(path, middleware);
-        }
-
-        if (typeof path === 'string' && typeof middleware === 'object') {
-            if (middleware instanceof Router) {
-                this.router.use(path, middleware);
-            } else {
-                this.middleware.use(path, middleware);
-            }
-        }
-
+    use(path, middleware = null) {
         if (typeof path === 'function') {
             this.middleware.use(path);
+        } else if (typeof path === 'string' && typeof middleware === 'function') {
+            this.middleware.use((req, res, next) => {
+                if (req.path.startsWith(path)) {
+                    return middleware(req, res, next);
+                }
+                next();
+            });
+        } else if (typeof path === 'string' && middleware && typeof middleware.handle === 'function') {
+            this.middleware.use((req, res, next) => {
+                if (req.url.startsWith(path)) {
+                    return middleware.handle(req, res, next);
+                }
+                next();
+            });
+        } else if (path && typeof path.handle === 'function') {
+            this.middleware.use((req, res, next) => path.handle(req, res, next));
+        } else {
+            this.router.errorHandler(new Error('Invalid middleware'), req, res);
         }
     }
 
     get(path, handler) {
-        this.router.get(path, handler);
+        this.router.route(path, 'GET', handler);
     }
 
     post(path, handler) {
-        this.router.post(path, handler);
+        this.router.route(path, 'POST', handler);
     }
 
     put(path, handler) {
-        this.router.put(path, handler);
+        this.router.route(path, 'PUT', handler);
     }
 
     delete(path, handler) {
-        this.router.delete(path, handler);
+        this.router.route(path, 'DELETE', handler);
     }
 
     patch(path, handler) {
-        this.router.patch(path, handler);
+        this.router.route(path, 'PATCH', handler);
     }
 
     all(path, handler) {
-        this.router.all(path, handler);
+        this.router.route(path, '*', handler);
     }
 
     handle(req, res) {
         const request = new Request(req);
         const response = new Response(res);
 
-        this.middleware.apply(request, response, (err) => {
+        this.middleware.execute(request, response, (err) => {
             if (err) {
-                this.router.errorHandler(err, request, response);
-            } else {
-                this.router.handle(request, response);
+                return this.router.errorHandler(err, request, response);
             }
+            this.router.handle(request, response);
         });
     }
 
@@ -96,9 +94,4 @@ exports.json = function (options) {
     return parseBody(options);
 }
 
-// export type Router = Router;
-// export type Request = Request;
-// export type Response = Response;
-// export type MiddlewareManager = MiddlewareManager;
-// export type ErrorHandler = ErrorHandler;
 exports.Router = createRouter;

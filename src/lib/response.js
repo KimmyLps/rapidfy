@@ -62,13 +62,12 @@ exports = module.exports = class Response {
     sendFile(filePath) {
         fs.readFile(filePath, (err, data) => {
             if (err) {
-                this.status(404).send('File not found');
+                this.status(500).send('Internal Server Error');
                 return;
             }
-            this.setHeader('Content-Type', 'application/octet-stream');
-            this.setHeader('Content-Length', data.length);
-            this.res.end(data);
+            this.send(data);
         });
+        return this;
     }
 
     // redirect(url) {

@@ -1,102 +1,79 @@
+const url = require('url');
+
 class Router {
     constructor() {
         this.routes = [];
     }
 
+    route(path, method, handler) {
+        const pathRegex = this._pathToRegex(path);
+        const params = this._getParamNames(path);
+        this.routes.push({ path, pathRegex, params, method, handler });
+    }
+
+    _pathToRegex(path) {
+        return new RegExp('.*' + path.replace(/:\w+/g, '([^\\/]+)') + '$');
+    }
+
+    _getParamNames(path) {
+        const paramNames = [];
+        const params = path.match(/:\w+/g);
+        if (params) {
+            params.forEach(param => paramNames.push(param.substring(1)));
+        }
+        return paramNames;
+    }
+
+    _parseParams(route, matches) {
+        const params = {};
+        route.params.forEach((name, index) => {
+            params[name] = matches[index + 1];
+        });
+        return params;
+    }
+
     get(path, handler) {
-        this.routes.push({ path, method: 'GET', handler });
+        this.route(path, 'GET', handler);
     }
 
     post(path, handler) {
-        this.routes.push({ path, method: 'POST', handler });
+        this.route(path, 'POST', handler);
     }
 
     put(path, handler) {
-        this.routes.push({ path, method: 'PUT', handler });
+        this.route(path, 'PUT', handler);
     }
 
     delete(path, handler) {
-        this.routes.push({ path, method: 'DELETE', handler });
+        this.route(path, 'DELETE', handler);
     }
 
     patch(path, handler) {
-        this.routes.push({ path, method: 'PATCH', handler });
+        this.route(path, 'PATCH', handler);
     }
 
     all(path, handler) {
-        this.routes.push({ path, method: '*', handler });
-    }
-
-    use(path, handler) {
-        if (typeof path === 'string' && handler instanceof Router) {
-            if (path === '/' || path === '*' || path === '') path = '';
-            handler.routes.forEach(r => {
-                this.routes.push({ path: path + r.path, method: r.method, handler: r.handler });
-            });
-        } else if (typeof path === 'string' && typeof handler === 'function') {
-            this.routes.push({ path, method: '*', handler });
-        } else if (typeof path === 'function') {
-            this.routes.push({ path: '/', method: '*', handler: path });
-        } else if (typeof path === 'object') {
-            if (path instanceof Router) {
-                path.routes.forEach(r => {
-                    this.routes.push({ path: r.path, method: r.method, handler: r.handler });
-                });
-            }
-        }
-
-        return this;
-    }
-
-    route(path, method, handler) {
-        this.routes.push({ path, method, handler });
-    }
-
-    matchRoute(req) {
-        const url = new URL(req.url, `http://${req.headers.host}`);
-        const query = Object.fromEntries(url.searchParams);
-
-
-        for (let route of this.routes) {
-            const pathParts = route.path.split('/');
-            const urlParts = url.pathname.split('/');
-
-            if (pathParts.length !== urlParts.length || route.method !== req.method) continue;
-
-            const params = {};
-            let matched = true;
-
-            for (let i = 0; i < pathParts.length; i++) {
-                if (pathParts[i].startsWith(':')) {
-                    params[pathParts[i].substring(1)] = urlParts[i];
-                } else if (pathParts[i] !== urlParts[i]) {
-                    matched = false;
-                    break;
-                }
-            }
-
-            if (matched) {
-                req.params = params;
-                req.query = query;
-                return route;
-            }
-        }
-
-        return null;
+        this.route(path, '*', handler);
     }
 
     handle(req, res) {
-        let route = this.matchRoute(req);
-        if (route) {
-            return route.handler(req, res);
-        } else {
-            this.notFound(req, res);
+        const { pathname, query } = url.parse(req.url, true)
+        req.query = query;
+
+        try {
+            const route = this.routes.find(r => r.method === req.method && r.pathRegex.test(pathname));
+            if (!route) return this.notFound(req, res);
+            const matches = pathname.match(route.pathRegex);
+            req.params = this._parseParams(route, matches);
+            route.handler(req, res);
+        } catch (err) {
+            this.errorHandler(err, req, res);
         }
     }
 
-    errorHandler(err, req, res) {
+    errorHandler(err, _, res) {
         console.error('Unhandled error:', err);
-        res.status(500).send('Internal Server Error');
+        res.status(500).json({ message: `Internal Server Error: ${err.message}` });
     }
 
     notFound(req, res) {
