@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "node examples/v1/index.js",
-    "test": "node tests/app.test.js"
+    "test": "jest"
   },
   "repository": "https://github.com/KimmyLps/rapidfy.git",
   "publishConfig": {
@@ -23,5 +23,8 @@
   "bugs": {
     "url": "https://github.com/KimmyLps/rapidfy/issues"
   },
-  "homepage": "https://github.com/KimmyLps/rapidfy#readme"
+  "homepage": "https://github.com/KimmyLps/rapidfy#readme",
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
 }
