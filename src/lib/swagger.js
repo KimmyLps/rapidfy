@@ -1,141 +1,220 @@
+const { prepareSpecification, extractSpecification, organizeAnnotations, finalizeSpecification } = require('./swagger-ui-assets/specification.js');
+const { validateOptions } = require('../utils/swagger.js');
 const path = require('path');
 const fs = require('fs');
-const Router = require('./router/router');
-const { parseSwaggerComments } = require('../utils/parser');
 
-class SwaggerUI {
-    constructor() {
-        this.router = Router();
-        this.router = Router();
-        this.swaggerSpec = null;
-        this.swaggerOptions = null;
-        this.swaggerUIDir = path.join(__dirname, './swagger');
-    }
 
-    setSwaggerSpec(swaggerSpec) {
-        this.swaggerSpec = swaggerSpec;
-        return this;
-    }
+// const swagger = (options) => {
+//     validateOptions(options);
 
-    setSwaggerOptions(swaggerOptions) {
-        this.swaggerOptions = swaggerOptions;
-        return this;
-    }
+//     const spec = prepareSpecification(options);
 
-    serve(specPath = '/swagger.json', docsPath = '/docs') {
-        this.router.get(specPath, (_, res, next) => {
-            if (!res.writableEnded) {
-                console.log('Spec path');
-                res.json(this.swaggerSpec || { error: 'Swagger spec not provided' });
-            } else {
-                next();
-            }
-        });
-        this.router.get(docsPath, (_, res, next) => {
-            if (!res.writableEnded) {
-                console.log('Docs path');
-                const htmlFile = path.join(this.swaggerUIDir, 'swagger-ui.html');
-    
-                // const data = fs.readFileSync(htmlFile, 'utf8');
-                // if (this.swaggerOptions) {
-                //     const options = JSON.stringify(this.swaggerOptions);
-                //     const updatedData = data.replace('window.ui = ui', `window.ui = ui\nwindow.ui.initOAuth(${options})`);
-                //     res.setHeader('Content-Type', 'text/html');
-                //     res.send(updatedData);
-                //     return;
-                // }
-                res.setHeader('Content-Type', 'text/html');
-                res.sendFile(htmlFile);
-            } else {
-                next();
-            }
-        });
-        // this.router.get('/index.css', (_, res) => {
-        //     console.log('Index css');
-        //     const cssFile = path.join(this.swaggerUIDir, 'index.css');
-        //     res.setHeader('Content-Type', 'text/css');
-        //     res.sendFile(cssFile);
-        // });
-        // this.router.get('/swagger-ui.css', (_, res) => {
-        //     console.log('Swagger css');
-        //     const cssFile = path.join(this.swaggerUIDir, 'swagger-ui.css');
-        //     res.setHeader('Content-Type', 'text/css');
-        //     res.sendFile(cssFile);
-        // });
-        // this.router.get('/swagger-ui.css.map', (_, res) => {
-        //     console.log('Swagger css map');
-        //     const cssMapFile = path.join(this.swaggerUIDir, 'swagger-ui.css.map');
-        //     res.setHeader('Content-Type', 'application/json');
-        //     res.sendFile(cssMapFile);
-        // });
-        // this.router.get('/swagger-ui-bundle.js', (_, res) => {
-        //     console.log('Swagger bundle js');
-        //     const jsFile = path.join(this.swaggerUIDir, 'swagger-ui-bundle.js');
-        //     res.setHeader('Content-Type', 'application/javascript');
-        //     res.sendFile(jsFile);
-        // });
-        // this.router.get('/swagger-ui-standalone-preset.js', (_, res) => {
-        //     console.log('Swagger standalone preset js');
-        //     const jsFile = path.join(this.swaggerUIDir, 'swagger-ui-standalone-preset.js');
-        //     res.setHeader('Content-Type', 'application/javascript');
-        //     res.sendFile(jsFile);
-        // });
-        // this.router.get('/swagger-initializer.js', (_, res) => {
-        //     console.log('Swagger initializer js');
-        //     const jsFile = path.join(this.swaggerUIDir, 'swagger-initializer.js');
+//     const parts = extractSpecification(options);
 
-        //     const data = fs.readFileSync(jsFile, 'utf8');
-        //     // const data = fs.readFileSync(htmlFile, 'utf8');
-        //     if (this.swaggerOptions) {
-        //         const options = JSON.stringify(this.swaggerOptions);
-        //         const updatedData = data.replace('window.ui = ui', `window.ui = ui\nwindow.ui.initOAuth(${options})`);
-        //         res.setHeader('Content-Type', 'text/html');
-        //         res.send(updatedData);
-        //         return;
-        //     }
-        //     // console.log(data);
-        //     res.setHeader('Content-Type', 'application/javascript');
-        //     res.sendFile(jsFile);
-        // });
+//     organizeAnnotations(spec, parts);
 
-        return this;
-    }
+//     // return finalizeSpecification(spec, options);
+//     const finalSpec = finalizeSpecification(spec, options);
 
-    swaggerGen(sourceDir) {
-        const initialSwaggerSpec = {
-            swagger: '2.0',
-            info: {
-                version: '1.0.0',
-                title: 'My API',
-                description: 'API documentation'
-            },
-            host: 'localhost:3000',
-            basePath: '/',
-            schemes: ['http'],
-            paths: {}
-        };
-        const files = fs.readdirSync(sourceDir);
-        files.forEach(file => {
-            if (file.endsWith('.js')) {
-                const filePath = path.join(sourceDir, file);
-                const swaggerJson = parseSwaggerComments(filePath);
-                if (!this.swaggerSpec) {
-                    this.swaggerSpec = initialSwaggerSpec;
-                    return;
-                }
-                if (swaggerJson) {
-                    Object.assign(this.swaggerSpec.paths, swaggerJson && swaggerJson.paths);
-                    return;
-                }
-            }
-        });
+//     return {
+//         swaggerSpec: finalSpec,
+//         serve: (options) => serve(options),
+//     }
+// };
 
-        return this;
-    }
+/**
+ * Swagger class for handling the generation and serving of Swagger documentation.
+ * @returns {Swagger} Instance of the Swagger class.
+ */
+// class Swagger {
+//     /**
+//      * Constructor for the Swagger class.
+//      * 
+//      * @param {Object} options - Configuration options for Swagger setup.
+//      * @param {string} options.encoding - Optional, passed to read file function options. Defaults to 'utf8'.
+//      * @param {boolean} options.failOnErrors - Whether or not to throw when parsing errors. Defaults to false.
+//      * @param {string} options.format - Optional, defaults to '.json' - target file format '.yml' or '.yaml'.
+//      * @param {Object} options.swaggerDefinition - Swagger definition object.
+//      * @param {Object} options.definition - API definition object.
+//      * @param {Array} options.apis - Array of paths to files containing API annotations.
+//      */
+//     constructor(options) {
+//         // Validate the provided options to ensure required fields are present and correctly formatted.
+//         validateOptions(options);
+
+//         // Prepare the initial Swagger object from the provided options.
+//         this.swaggerObject = prepareSpecification(options);
+
+//         // Extract annotations from the specified API files.
+//         this.annotations = extractSpecification(options);
+
+//         // Organize the Swagger object with the extracted annotations.
+//         this.orgSwaggerObject = organizeAnnotations(this.swaggerObject, this.annotations);
+
+//         // Finalize the Swagger object with the organized annotations.
+//         this.finalSwaggerObject = finalizeSpecification(this.orgSwaggerObject, options);
+//     }
+
+//     /**
+//      * Serves Swagger UI and API specification as middleware.
+//      * 
+//      * @param {Object} options - Configuration options for serving Swagger UI.
+//      * @param {string} options.assetsDir - Directory containing Swagger UI assets.
+//      * @param {string} options.pathDoc - Path to serve Swagger UI (e.g., '/docs').
+//      * @param {string} options.pathSpec - Path to serve Swagger spec (e.g., '/swagger.json').
+//      * @returns {Function} Middleware function to serve Swagger UI assets.
+//      */
+//     serve(options = {}) {
+//         const assetsDir = options.assetsDir || path.join(__dirname, 'swagger-ui-assets');
+//         const pathDoc = options.pathDoc || '/docs';
+//         const swaggerUrl = options.swaggerUrl || '/swagger.json';
+//         const swaggerSpec = this.finalSwaggerObject;
+
+//         return (req, res, next) => {
+//             const { url, method } = req;
+//             if (url === swaggerUrl && method === 'GET') {
+//                 res.json(swaggerSpec || { error: 'Swagger spec not provided' });
+//             } else if (url === pathDoc && method === 'GET') {
+//                 const htmlFile = path.join(assetsDir, 'swagger-ui.html');
+//                 res.setHeader('Content-Type', 'text/html');
+//                 res.sendFile(htmlFile);
+//             } else if (url === '/index.css' && method === 'GET') {
+//                 const cssFile = path.join(assetsDir, 'index.css');
+//                 res.setHeader('Content-Type', 'text/css');
+//                 res.sendFile(cssFile);
+//             } else if (url === '/swagger-ui.css' && method === 'GET') {
+//                 const cssFile = path.join(assetsDir, 'swagger-ui.css');
+//                 res.setHeader('Content-Type', 'text/css');
+//                 res.sendFile(cssFile);
+//             } else if (url === '/swagger-ui.css.map' && method === 'GET') {
+//                 const cssFile = path.join(assetsDir, 'swagger-ui.css.map');
+//                 res.setHeader('Content-Type', 'text/css');
+//                 res.sendFile(cssFile);
+//             } else if (url === '/swagger-ui-bundle.js' && method === 'GET') {
+//                 const jsFile = path.join(assetsDir, 'swagger-ui-bundle.js');
+//                 res.setHeader('Content-Type', 'text/javascript');
+//                 res.sendFile(jsFile);
+//             } else if (url === '/swagger-ui-standalone-preset.js' && method === 'GET') {
+//                 const jsFile = path.join(assetsDir, 'swagger-ui-standalone-preset.js');
+//                 res.setHeader('Content-Type', 'text/javascript');
+//                 res.sendFile(jsFile);
+//             } else if (url === '/swagger-ui-initializer.js' && method === 'GET') {
+//                 const jsFile = path.join(assetsDir, 'swagger-ui-initializer.js');
+//                 const data = fs.readFileSync(jsFile, 'utf8');
+//                 const updatedData = data.replace('var options = options || {};', `var options = ${JSON.stringify(options)};`);
+//                 res.setHeader('Content-Type', 'text/html');
+//                 res.send(updatedData);
+//             } else {
+//                 next();
+//             }
+//         }
+//     };
+// }
+
+
+
+/**
+ * Swagger function for handling the generation swagger documentation.
+ * @param {object} options - Configuration options
+ * @param {string} options.encoding Optional, passed to read file function options. Defaults to 'utf8'.
+ * @param {boolean} options.failOnErrors Whether or not to throw when parsing errors. Defaults to false.
+ * @param {string} options.formatSpecification Optional, defaults to '.json' - target file formatSpecification '.yml' or '.yaml'.
+ * @param {object} options.swaggerDefinition
+ * @param {object} options.definition
+ * @param {array} options.apis
+ * @returns {Object} Swagger specification object
+ */
+const createSwagger = (options) => {
+    // Validate the provided options to ensure required fields are present and correctly formatted.
+    validateOptions(options);
+
+    // Prepare the initial Swagger object from the provided options.
+    const swaggerObject = prepareSpecification(options);
+
+    // Extract annotations from the specified API files.
+    const annotations = extractSpecification(options);
+
+    // Organize the Swagger object with the extracted annotations.
+    organizeAnnotations(swaggerObject, annotations);
+
+    // Finalize the Swagger object with the organized annotations.
+    const finalSpec = finalizeSpecification(swaggerObject, options);
+
+    return finalSpec;
 }
 
-function createSwaggerUI(app) {
-    return new SwaggerUI(app);
-}
-exports = module.exports = createSwaggerUI;
-exports.SwaggerUI = SwaggerUI;
+/**
+ * Serve swagger-ui assets as middleware.
+ * @param {Object} options - Configuration options
+ * @param {string} options.assetsDir - Directory containing swagger-ui assets
+ * @param {string} options.pathDoc - Path to serve swagger-ui assets (e.g., '/docs') default to '/docs'
+ * @param {string} options.pathSpec - Path to serve swagger spec (e.g., '/swagger.json') default to '/swagger.json'
+ * @param {Object} options.spec - Swagger specification object to serve as JSON
+ * @param {Array} options.swaggerUrls - Array of objects containing 'url' and 'name' properties for multiple swagger specs
+ * @param {Object} options.customOptions - Custom options to pass to Swagger UI bundle initialization
+ * @param {Object} options.customOptions.oauth - OAuth configuration object for Swagger UI bundle
+ * @param {Object} options.customOptions.preauthorizeApiKey - Preauthorize API key configuration object for Swagger UI bundle
+ * @param {Object} options.customOptions.preauthorizeApiKey.apiKey - API key to preauthorize for Swagger UI bundle
+ * @param {Object} options.customOptions.preauthorizeApiKey.apiKeyValue - API key value to preauthorize for Swagger UI bundle
+ * @param {Object} options.customOptions.authAction - Authorization action object for Swagger UI bundle
+ * @param {Array} options.customOptions.authActions - Array of authorization action objects for Swagger UI bundle
+ * @returns {Function} - Middleware function to serve swagger-ui assets as middleware function
+ */
+const swaggerServe = (options = {}) => {
+    const assetsDir = options.assetsDir || path.join(__dirname, 'swagger-ui-assets');
+    const pathDoc = options.pathDoc || '/docs';
+    const pathSpec = options.pathSpec || '/swagger.json';
+    const swaggerSpec = options.spec;
+
+    return (req, res, next) => {
+        const { url, method } = req;
+        if (url === pathSpec && method === 'GET') {
+            res.json(swaggerSpec || { error: 'Swagger spec not provided' });
+        } else if (url === pathDoc && method === 'GET') {
+            const htmlFile = path.join(assetsDir, 'swagger-ui.html');
+            res.setHeader('Content-Type', 'text/html');
+            res.sendFile(htmlFile);
+        } else if (url === '/index.css' && method === 'GET') {
+            const cssFile = path.join(assetsDir, 'index.css');
+            res.setHeader('Content-Type', 'text/css');
+            res.sendFile(cssFile);
+        } else if (url === '/swagger-ui.css' && method === 'GET') {
+            const cssFile = path.join(assetsDir, 'swagger-ui.css');
+            res.setHeader('Content-Type', 'text/css');
+            res.sendFile(cssFile);
+        } else if (url === '/swagger-ui.css.map' && method === 'GET') {
+            const cssFile = path.join(assetsDir, 'swagger-ui.css.map');
+            res.setHeader('Content-Type', 'text/css');
+            res.sendFile(cssFile);
+        } else if (url === '/swagger-ui-bundle.js' && method === 'GET') {
+            const jsFile = path.join(assetsDir, 'swagger-ui-bundle.js');
+            res.setHeader('Content-Type', 'text/javascript');
+            res.sendFile(jsFile);
+        } else if (url === '/swagger-ui-standalone-preset.js' && method === 'GET') {
+            const jsFile = path.join(assetsDir, 'swagger-ui-standalone-preset.js');
+            res.setHeader('Content-Type', 'text/javascript');
+            res.sendFile(jsFile);
+        } else if (url === '/swagger-ui-initializer.js' && method === 'GET') {
+            const jsFile = path.join(assetsDir, 'swagger-ui-initializer.js');
+            const data = fs.readFileSync(jsFile, 'utf8');
+            const updatedData = data.replace('var options = options || {};', `var options = ${JSON.stringify(options)};`);
+            res.setHeader('Content-Type', 'text/html');
+            res.send(updatedData);
+        } else if (url === '/favicon-32x32.png' && method === 'GET') {
+            const faviconFile = path.join(assetsDir, 'favicon-32x32.png');
+            res.setHeader('Content-Type', 'image/png');
+            res.sendFile(faviconFile);
+        } else if (url === '/favicon-16x16.png' && method === 'GET') {
+            const faviconFile = path.join(assetsDir, 'favicon-16x16.png');
+            res.setHeader('Content-Type', 'image/png');
+            res.sendFile(faviconFile);
+        } else {
+            next();
+        }
+    }
+};
+
+module.exports = {
+    createSwagger,
+    swaggerServe,
+};

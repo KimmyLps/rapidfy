@@ -1,6 +1,11 @@
 // logger.js
 const requestLogger = (options = {}) => {
     const { format = 'combined', production = false } = options;
+
+    if (options.production) {
+        return (req, res, next) => next();
+    }
+
     return (req, res, next) => {
         const start = process.hrtime();
 
@@ -52,5 +57,6 @@ const requestLogger = (options = {}) => {
         next();
     };
 };
+
 
 module.exports = requestLogger;

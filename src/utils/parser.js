@@ -71,3 +71,16 @@ parser.parseParams = function () {
         next();
     };
 }
+
+parser.parseSwaggerComments = function (comments) {
+    const swaggerComments = {};
+    comments.forEach(comment => {
+        const [key, value] = comment.split(':');
+        const [path, method] = key.split(' ');
+        if (!swaggerComments[path]) {
+            swaggerComments[path] = {};
+        }
+        swaggerComments[path][method] = value.trim();
+    });
+    return swaggerComments;
+}

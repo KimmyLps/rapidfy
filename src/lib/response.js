@@ -57,6 +57,11 @@ exports = module.exports = class Response {
             this.res.end(body);
             return this;
         }
+
+        if (typeof body === 'object') {
+            this.json(body);
+            return this;
+        }
     }
 
     sendFile(filePath) {

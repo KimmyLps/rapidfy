@@ -5,7 +5,6 @@ var Request = require('./request');
 var Response = require('./response');
 var MiddlewareManager = require('./middleware');
 var { parseBody } = require('../utils/parser');
-var SwaggerUI = require('./swagger');
 
 exports = module.exports = createApplication;
 
@@ -21,7 +20,10 @@ class Rapidfy {
     }
 
     init() {
-        // this.use(parseBody());
+        this.use((_, res, next) => {
+            res.setHeader('X-Powered-By', 'RapidfyJS');
+            next();
+        });
     }
 
     use(path, middleware = null) {
@@ -41,35 +43,44 @@ class Rapidfy {
                 }
                 next();
             });
+        } else if (path && typeof path === 'object' && path.router instanceof Router && path.router.routes.length > 0) {
+            path.router.routes.forEach(route => this.router.routes.push(route));
         } else if (path && typeof path.handle === 'function') {
             this.middleware.use((req, res, next) => path.handle(req, res, next));
         } else {
-            this.router.errorHandler(new Error('Invalid middleware'), req, res);
+            this.middleware.use((req, res, next) => this.router.errorHandler(new Error('Invalid middleware'), req, res))
         }
+        return this;
     }
 
     get(path, handler) {
         this.router.route(path, 'GET', handler);
+        return this;
     }
 
     post(path, handler) {
         this.router.route(path, 'POST', handler);
+        return this;
     }
 
     put(path, handler) {
         this.router.route(path, 'PUT', handler);
+        return this;
     }
 
     delete(path, handler) {
         this.router.route(path, 'DELETE', handler);
+        return this;
     }
 
     patch(path, handler) {
         this.router.route(path, 'PATCH', handler);
+        return this;
     }
 
     all(path, handler) {
         this.router.route(path, '*', handler);
+        return this;
     }
 
     handle(req, res) {
@@ -82,6 +93,7 @@ class Rapidfy {
             }
             this.router.handle(request, response);
         });
+        return this;
     }
 
     listen(port, cb) {
@@ -90,8 +102,8 @@ class Rapidfy {
     }
 }
 
-exports.json = function (options) {
-    return parseBody(options);
-}
+exports.json = require('../utils/parser').parseBody;
 
+exports.createSwagger = require('./swagger').createSwagger;
+exports.swaggerServe = require('./swagger').swaggerServe;
 exports.Router = createRouter;

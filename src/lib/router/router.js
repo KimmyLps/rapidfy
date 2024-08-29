@@ -65,7 +65,12 @@ class Router {
             if (!route) return this.notFound(req, res);
             const matches = pathname.match(route.pathRegex);
             req.params = this._parseParams(route, matches);
-            route.handler(req, res);
+
+            if (route.handler && (route.handler instanceof Router || typeof route.handler === 'function')) {
+                route.handler(req, res);
+            } else {
+                res.send(route.handler);
+            }
         } catch (err) {
             this.errorHandler(err, req, res);
         }
