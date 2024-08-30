@@ -52,6 +52,14 @@ class Router {
         this.route(path, 'PATCH', handler);
     }
 
+    head(path, handler) {
+        this.route(path, 'HEAD', handler);
+    }
+
+    options(path, handler) {
+        this.route(path, 'OPTIONS', handler);
+    }
+
     all(path, handler) {
         this.route(path, '*', handler);
     }

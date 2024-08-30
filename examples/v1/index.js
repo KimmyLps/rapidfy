@@ -3,6 +3,11 @@ const rapidfy = require('../../src/lib/app');
 const app = rapidfy();
 const router = rapidfy.Router();
 
+// app.use(rapidfy.cors({
+//     origins: 'http://localhost:3000',
+//     methods: 'PUT',
+//     headers: 'Content-Type,Authorization',
+// }));
 app.use(rapidfy.json());
 // swagger ui
 // const swaggerOptions = {
@@ -124,6 +129,10 @@ app.use('/api', router);
 
 app.get('/get-body', (req, res) => {
     res.status(200).json(req.body);
+});
+
+app.get('/redirect', (req, res) => {
+    res.redirect('https://example.com');
 });
 
 app.listen(3000, () => {

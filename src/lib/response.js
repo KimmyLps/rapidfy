@@ -75,10 +75,9 @@ exports = module.exports = class Response {
         return this;
     }
 
-    // redirect(url) {
-    //     this.status(302).setHeader('Location', url).end();
-    //     return this;
-    // }
+    redirect(url) {
+        return this.status(302).setHeader('Location', url).end();
+    }
 
     end(...args) {
         return this.res.end(...args);
@@ -93,8 +92,7 @@ exports = module.exports = class Response {
     }
 
     sendStatus(code) {
-        this.status(code).send(code.toString());
-        return this;
+        return this.status(code).send(code.toString());
     }
 
     get statusCode() {

@@ -1,5 +1,5 @@
 {
-  "name": "rapidfy",
+  "name": "rapidfy-js",
   "version": "1.0.0",
   "description": "Rapidfy is a simple and fast way to create a new project",
   "main": "index.js",
@@ -12,7 +12,7 @@
     "@KimmyLps:registry": "https://npm.pkg.github.com"
   },
   "keywords": [
-    "rapidfy",
+    "rapidfy-js",
     "cli",
     "node",
     "backend",

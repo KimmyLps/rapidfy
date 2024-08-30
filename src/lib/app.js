@@ -4,7 +4,6 @@ var createRouter = require('./router/router');
 var Request = require('./request');
 var Response = require('./response');
 var MiddlewareManager = require('./middleware');
-var { parseBody } = require('../utils/parser');
 
 exports = module.exports = createApplication;
 
@@ -78,6 +77,16 @@ class Rapidfy {
         return this;
     }
 
+    head(path, handler) {
+        this.router.route(path, 'HEAD', handler);
+        return this;
+    }
+
+    options(path, handler) {
+        this.router.route(path, 'OPTIONS', handler);
+        return this;
+    }
+
     all(path, handler) {
         this.router.route(path, '*', handler);
         return this;
@@ -102,6 +111,7 @@ class Rapidfy {
     }
 }
 
+exports.cors = require('./cors').cors;
 exports.json = require('../utils/parser').parseBody;
 
 exports.createSwagger = require('./swagger').createSwagger;
