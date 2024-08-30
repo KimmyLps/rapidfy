@@ -58,7 +58,7 @@ parser.parseBody = function (options = {}) {
             }
             next();
         } catch (error) {
-            res.status(400).end(`Error parsing body: ${error.message}`);
+            res.status(400).json({ message: `Error: ${error.message}` });
         }
     }
 }
@@ -70,4 +70,17 @@ parser.parseParams = function () {
         req.url = url.pathname;
         next();
     };
+}
+
+parser.parseSwaggerComments = function (comments) {
+    const swaggerComments = {};
+    comments.forEach(comment => {
+        const [key, value] = comment.split(':');
+        const [path, method] = key.split(' ');
+        if (!swaggerComments[path]) {
+            swaggerComments[path] = {};
+        }
+        swaggerComments[path][method] = value.trim();
+    });
+    return swaggerComments;
 }

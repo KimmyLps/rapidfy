@@ -1,4 +1,3 @@
-var Router = require('./router/router').Router;
 
 exports = module.exports = class MiddlewareManager {
     constructor() {
@@ -9,28 +8,22 @@ exports = module.exports = class MiddlewareManager {
         this.middlewares.push(middleware);
     }
 
-    apply(req, res, cb) {
-        const stack = this.middlewares.slice();
+    execute(req, res, cb) {
+        const stack = this.middlewares;
         let index = 0;
 
-        const next = (err) => {
-            if (err) {
-                return cb(err);
+        const next = () => {
+            try {
+                if (index < stack.length) {
+                    const middleware = stack[index++];
+                    middleware(req, res, next);
+                } else {
+                    cb();
+                }
+            } catch (err) {
+                cb(err);
             }
-
-            if (index >= stack.length) {
-                return cb();
-            }
-
-            const middleware = stack[index++];
-            if (typeof middleware === 'function') {
-                middleware(req, res, next);
-            } else if (middleware instanceof Router) {
-                middleware.handle(req, res);
-            } else {
-                next();
-            }
-        }
+        };
 
         next();
     }

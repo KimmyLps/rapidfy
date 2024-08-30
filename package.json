@@ -1,5 +1,5 @@
 {
-  "name": "rapidfy",
+  "name": "rapidfy-js",
   "version": "1.0.0",
   "description": "Rapidfy is a simple and fast way to create a new project",
   "main": "index.js",
@@ -12,7 +12,7 @@
     "@KimmyLps:registry": "https://npm.pkg.github.com"
   },
   "keywords": [
-    "rapidfy",
+    "rapidfy-js",
     "cli",
     "node",
     "backend",
@@ -26,5 +26,12 @@
   "homepage": "https://github.com/KimmyLps/rapidfy#readme",
   "devDependencies": {
     "jest": "^29.7.0"
+  },
+  "dependencies": {
+    "doctrine": "^3.0.0",
+    "lodash.mergewith": "^4.6.2",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-parser": "^10.0.3",
+    "yaml": "^2.5.0"
   }
 }

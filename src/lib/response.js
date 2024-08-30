@@ -57,24 +57,27 @@ exports = module.exports = class Response {
             this.res.end(body);
             return this;
         }
+
+        if (typeof body === 'object') {
+            this.json(body);
+            return this;
+        }
     }
 
     sendFile(filePath) {
         fs.readFile(filePath, (err, data) => {
             if (err) {
-                this.status(404).send('File not found');
+                this.status(500).send('Internal Server Error');
                 return;
             }
-            this.setHeader('Content-Type', 'application/octet-stream');
-            this.setHeader('Content-Length', data.length);
-            this.res.end(data);
+            this.send(data);
         });
+        return this;
     }
 
-    // redirect(url) {
-    //     this.status(302).setHeader('Location', url).end();
-    //     return this;
-    // }
+    redirect(url) {
+        return this.status(302).setHeader('Location', url).end();
+    }
 
     end(...args) {
         return this.res.end(...args);
@@ -89,8 +92,7 @@ exports = module.exports = class Response {
     }
 
     sendStatus(code) {
-        this.status(code).send(code.toString());
-        return this;
+        return this.status(code).send(code.toString());
     }
 
     get statusCode() {
